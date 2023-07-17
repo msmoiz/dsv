@@ -1,7 +1,7 @@
-use crate::{
-    error::Result,
-    parser::{Options, Parser},
-};
+use std::ops::{Index, IndexMut};
+
+pub use crate::parser::Options;
+use crate::{error::Result, parser::Parser};
 
 /// A table of delimiter-separated values.
 ///
@@ -28,5 +28,25 @@ impl Dsv {
     /// Parse a Dsv from an input string with options.
     pub fn from_str_with_options(text: &str, options: Options) -> Result<Dsv> {
         Parser::from_str_with_options(text, options)
+    }
+}
+
+impl Index<usize> for Dsv {
+    type Output = Vec<String>;
+
+    /// Returns a reference to the record at the specified index.
+    ///
+    /// Panics if there is no record at the specified index.
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.records[index]
+    }
+}
+
+impl IndexMut<usize> for Dsv {
+    /// Returns a mutable reference to the record at the specified index.
+    ///
+    /// Panics if there is no record at the specified index.
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.records[index]
     }
 }

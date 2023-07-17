@@ -16,11 +16,11 @@ pub struct Options {
     /// The delimiter that separates fields.
     ///
     /// Default: `,`.
-    delimiter: u8,
+    pub delimiter: u8,
     /// Treatment of double quotes.
     ///
     /// Default: `Quotes::Significant`.
-    quotes: Quotes,
+    pub quotes: Quotes,
 }
 
 impl Default for Options {
