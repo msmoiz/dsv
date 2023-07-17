@@ -14,7 +14,7 @@ pub struct Dsv {
 
 impl Dsv {
     /// Create a new Dsv.
-    pub fn new() -> Dsv {
+    pub(crate) fn new() -> Dsv {
         Dsv {
             ..Default::default()
         }
@@ -28,6 +28,11 @@ impl Dsv {
     /// Parse a Dsv from an input string with options.
     pub fn from_str_with_options(text: &str, options: Options) -> Result<Dsv> {
         Parser::from_str_with_options(text, options)
+    }
+
+    /// Get the records in this table.
+    pub fn records(&self) -> &[Vec<String>] {
+        &self.records
     }
 }
 
