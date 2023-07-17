@@ -2,13 +2,31 @@ use crate::error::{Error, Result};
 use crate::lexer::Token;
 use crate::{lexer::Lexer, Dsv};
 
+/// Options for parsing a DSV file.
+pub struct Options {
+    /// The delimiter that separates fields.
+    ///
+    /// Default: `,`.
+    delimiter: u8,
+}
+
+impl Default for Options {
+    fn default() -> Self {
+        Self { delimiter: b',' }
+    }
+}
+
 pub struct Parser<'a> {
     lexer: Lexer<'a>,
 }
 
 impl<'a> Parser<'a> {
     pub fn from_str(text: &'a str) -> Result<Dsv> {
-        let lexer = Lexer::new(text);
+        Parser::from_str_with_options(text, Options::default())
+    }
+
+    pub fn from_str_with_options(text: &'a str, options: Options) -> Result<Dsv> {
+        let lexer = Lexer::new(text, options.delimiter);
         let mut parser = Self { lexer };
         parser.dsv()
     }
@@ -119,5 +137,14 @@ mod tests {
         let text = "foo,bar\nbaz";
         let dsv = Parser::from_str(text);
         assert!(dsv.is_err());
+    }
+
+    #[test]
+    fn tab_delim() {
+        let text = "foo\tbar";
+        let dsv = Parser::from_str_with_options(text, Options { delimiter: b'\t' }).unwrap();
+        let mut expected = Dsv::new();
+        expected.records.push(vec!["foo".into(), "bar".into()]);
+        assert_eq!(dsv, expected);
     }
 }

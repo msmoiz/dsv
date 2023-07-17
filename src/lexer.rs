@@ -10,11 +10,16 @@ pub enum Token {
 pub struct Lexer<'a> {
     text: &'a str,
     pos: usize,
+    delimiter: u8,
 }
 
 impl<'a> Lexer<'a> {
-    pub fn new(text: &'a str) -> Self {
-        Self { text, pos: 0 }
+    pub fn new(text: &'a str, delimiter: u8) -> Self {
+        Self {
+            text,
+            pos: 0,
+            delimiter,
+        }
     }
 
     pub fn next(&mut self) -> Result<Option<Token>> {
@@ -50,7 +55,7 @@ impl<'a> Lexer<'a> {
     fn scan_delim(&self) -> Option<()> {
         assert!(self.pos < self.text.len());
         let current = self.text.as_bytes()[self.pos];
-        if current == b',' {
+        if current == self.delimiter {
             Some(())
         } else {
             None
@@ -72,7 +77,7 @@ impl<'a> Lexer<'a> {
         let bytes = self.text.as_bytes();
         let mut ix = self.pos;
         let mut len = 0;
-        while ix < self.text.len() && !matches!(bytes[ix], b',' | b'\n') {
+        while ix < self.text.len() && bytes[ix] != self.delimiter && bytes[ix] != b'\n' {
             ix += 1;
             len += 1;
         }
@@ -87,7 +92,7 @@ mod tests {
     #[test]
     fn peek() -> Result<()> {
         let text = ",";
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(text, b',');
         assert_eq!(lexer.peek()?, Some(Delimiter));
         assert_eq!(lexer.peek()?, Some(Delimiter));
         Ok(())
@@ -96,14 +101,14 @@ mod tests {
     #[test]
     fn delim() {
         let text = ",";
-        let token = Lexer::new(text).next().unwrap();
+        let token = Lexer::new(text, b',').next().unwrap();
         assert_eq!(token, Some(Delimiter));
     }
 
     #[test]
     fn consecutive_delim() -> Result<()> {
         let text = ",,";
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(text, b',');
         assert_eq!(lexer.next()?, Some(Delimiter));
         assert_eq!(lexer.next()?, Some(Delimiter));
         Ok(())
@@ -112,35 +117,35 @@ mod tests {
     #[test]
     fn newline() {
         let text = "\n";
-        let token = Lexer::new(text).next().unwrap();
+        let token = Lexer::new(text, b',').next().unwrap();
         assert_eq!(token, Some(Newline));
     }
 
     #[test]
     fn empty() {
         let text = "";
-        let token = Lexer::new(text).next().unwrap();
+        let token = Lexer::new(text, b',').next().unwrap();
         assert_eq!(token, None);
     }
 
     #[test]
     fn value() {
         let text = "foo";
-        let token = Lexer::new(text).next().unwrap();
+        let token = Lexer::new(text, b',').next().unwrap();
         assert_eq!(token, Some(Value("foo".into())));
     }
 
     #[test]
     fn value_with_spaces() {
         let text = "foo bar";
-        let token = Lexer::new(text).next().unwrap();
+        let token = Lexer::new(text, b',').next().unwrap();
         assert_eq!(token, Some(Value("foo bar".into())));
     }
 
     #[test]
     fn whitespace_values() -> Result<()> {
         let text = " , ";
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(text, b',');
         assert_eq!(lexer.next()?, Some(Value(" ".into())));
         assert_eq!(lexer.next()?, Some(Delimiter));
         assert_eq!(lexer.next()?, Some(Value(" ".into())));
@@ -150,7 +155,7 @@ mod tests {
     #[test]
     fn delim_values() -> Result<()> {
         let text = "foo,bar";
-        let mut lexer = Lexer::new(text);
+        let mut lexer = Lexer::new(text, b',');
         assert_eq!(lexer.next()?, Some(Value("foo".into())));
         assert_eq!(lexer.next()?, Some(Delimiter));
         assert_eq!(lexer.next()?, Some(Value("bar".into())));
