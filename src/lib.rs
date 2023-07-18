@@ -1,6 +1,6 @@
-//! This crate provides methods working with delimiter-separated values (DSV)
-//! files, including CSVs, TSVs, and other tabular files delimited by a single
-//! character.
+//! This crate provides methods for working with delimiter-separated values
+//! (DSV) files, including CSVs, TSVs, and other tabular files delimited by a
+//! single character.
 //!
 //! # Usage
 //!
