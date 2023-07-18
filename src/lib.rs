@@ -49,7 +49,6 @@
 //! assert_eq!(dsv[1][1], "moon");
 //! ```
 //!
-//!
 //! # Options
 //!
 //! The following parser options are available.
